@@ -75,11 +75,10 @@ llama-server -m ~/models/Qwen3-8B-Q4_K_M.gguf --host <address> --port 8088 -c 81
 
 ## Running Fisherman
 
-Fisherman runs as a container built from this repository's `Dockerfile`. No image is published: build it yourself and, if you use a registry, push it to your own.
+Fisherman runs as a container you build from this repository's `Dockerfile`:
 
 ```bash
 docker build -t fisherman:local .
-# optionally: docker tag fisherman:local registry.example.com/fisherman:0.3.0 && docker push registry.example.com/fisherman:0.3.0
 ```
 
 The container reads its configuration, prompts and keys from `/config` (mount read-only) and keeps its checkpoints in `/state` (a named volume). Use container paths in the configuration; start from `plugins/fisherman-redmine/examples/config.redmine.json`:
