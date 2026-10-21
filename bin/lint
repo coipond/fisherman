@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Runs every linter and the specs with coverage, as CI does.
-# Install the pinned tools first: pip install -r requirements-lint.txt
+# Runs every linter and both packages' specs with coverage, as CI does.
+# Set up once: pip install -r requirements-lint.txt -e . -e plugins/fisherman-redmine
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-ruff check fisherman tests
-ruff format --check fisherman tests
+PLUGIN=plugins/fisherman-redmine
+
+ruff check fisherman tests "$PLUGIN"
+ruff format --check fisherman tests "$PLUGIN"
 mypy
-pydoclint fisherman
+pydoclint fisherman "$PLUGIN/fisherman_redmine"
+
 coverage run -m unittest discover -s tests -t .
 coverage report
+
+(cd "$PLUGIN" && coverage run -m unittest discover -s tests -t . && coverage report)

@@ -7,7 +7,7 @@ from pathlib import Path
 from unittest import mock
 
 from fisherman.errors import RedmineError
-from fisherman.integrations.redmine.client import Client
+from fisherman_redmine.client import Client
 
 
 class Response(io.BytesIO):

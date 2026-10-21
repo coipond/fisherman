@@ -15,9 +15,9 @@ class EntryPoint:
 
 
 class PluginsTest(unittest.TestCase):
-    def test_builtins_and_bundled_integrations(self):
+    def test_builtins(self):
         self.assertIs(plugins.resolve("alerts", "stdout"), StdoutAlerts)
-        self.assertEqual(plugins.resolve("sources", "redmine").__name__, "RedmineSource")
+        self.assertNotIn("redmine", str(plugins.BUILTIN))
         self.assertIsInstance(plugins.build("records", {"type": "none"}), NoRecords)
 
     def test_dotted_path(self):

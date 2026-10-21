@@ -1,7 +1,7 @@
 import unittest
 
-from fisherman.integrations.redmine.alerts import RedmineAlerts
 from fisherman.item import Item, Verdict
+from fisherman_redmine.alerts import RedmineAlerts
 from tests.support.fakes import FakeRedmine
 
 

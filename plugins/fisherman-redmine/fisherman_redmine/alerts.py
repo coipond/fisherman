@@ -6,7 +6,7 @@ import html
 from typing import TYPE_CHECKING, Any
 
 from fisherman.contracts import Contract, is_int_at_least, is_string
-from fisherman.integrations.redmine.client import Client
+from fisherman_redmine.client import Client
 
 if TYPE_CHECKING:
     from fisherman.item import Item, Verdict

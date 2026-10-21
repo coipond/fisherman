@@ -1,8 +1,9 @@
 """Configuration: one JSON file, validated before anything runs.
 
-See `examples/config.example.json` for every option. Plug-in sections of a bundled integration
-may leave out its connection settings and share them through a top-level section named after
-the integration (for example "redmine").
+See `examples/config.example.json` for every option. Plug-in sections may leave out connection
+settings (`url`, `key_file`, `key_files`, `timeout`) and share them through a top-level section
+named after their type, so for example three `"type": "redmine"` sections can share one
+`"redmine": {"url": ..., "key_file": ...}`.
 """
 
 from __future__ import annotations

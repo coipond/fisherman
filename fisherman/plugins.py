@@ -8,9 +8,10 @@ There are three kinds of plug-ins:
 
 A `type` is resolved, in order, as:
 
-1. a built-in name (`jsonl`, `none`, `stdout`) or a bundled integration (`redmine`),
-2. a name another package registered under the `fisherman.sources`, `fisherman.records` or
-   `fisherman.alerts` entry point group,
+1. a built-in name (`jsonl`, `none`, `stdout`),
+2. a name an installed package registered under the `fisherman.sources`, `fisherman.records` or
+   `fisherman.alerts` entry point group (this is how integrations such as `fisherman-redmine`
+   plug in),
 3. a `package.module:Class` path.
 
 Every plug-in class is built with its configuration section as the only argument and may define
@@ -35,16 +36,13 @@ if TYPE_CHECKING:
 BUILTIN: dict[str, dict[str, str]] = {
     "sources": {
         "jsonl": "fisherman.sources.jsonl:JsonlSource",
-        "redmine": "fisherman.integrations.redmine.source:RedmineSource",
     },
     "records": {
         "none": "fisherman.records.none:NoRecords",
-        "redmine": "fisherman.integrations.redmine.records:RedmineRecords",
     },
     "alerts": {
         "stdout": "fisherman.alerts.stdout:StdoutAlerts",
         "jsonl": "fisherman.alerts.jsonl:JsonlAlerts",
-        "redmine": "fisherman.integrations.redmine.alerts:RedmineAlerts",
     },
 }
 

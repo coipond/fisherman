@@ -3,8 +3,8 @@
 ## 0.2.0 (Unreleased)
 - **[Feature]** Resolve plug-ins by built-in name, by `fisherman.sources` / `fisherman.records` / `fisherman.alerts` entry points, or by a `package.module:Class` path, so integrations can live outside this repository.
 - **[Feature]** Validate the whole configuration before anything runs and report every problem with its key path (for example `sources[0].url: is missing`). Each plug-in declares a `CONTRACT` for its own section.
-- [Enhancement] Move Redmine into `fisherman.integrations.redmine` (client, source, records, alerts). The core no longer imports it.
-- [Enhancement] Let a bundled integration's plug-ins share connection settings through one top-level section (for example `"redmine": {"url": ..., "key_file": ...}`).
+- [Enhancement] Move Redmine out of the core into its own package, `fisherman-redmine` (`plugins/fisherman-redmine`), registered through entry points. The core has no Redmine code or names; install both packages to use it.
+- [Enhancement] Let plug-ins of one type share connection settings through a top-level section named after the type (for example `"redmine": {"url": ..., "key_file": ...}`).
 - [Enhancement] Exit with code 2 and a one-line error on configuration, model or Redmine failures instead of a traceback.
 - [Enhancement] Raise `ModelUnavailableError` before reading any source when the model server is down, so no item is skipped.
 - [Maintenance] Rename the `pipeline.stages` setting to `pipeline.steps` and the `eval --stages` option to `--steps`.

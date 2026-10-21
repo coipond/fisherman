@@ -6,7 +6,7 @@ import re
 from typing import TYPE_CHECKING, Any
 
 from fisherman.contracts import Contract, is_list_of_ints, is_regex
-from fisherman.integrations.redmine.client import Client
+from fisherman_redmine.client import Client
 
 if TYPE_CHECKING:
     from fisherman.item import Item

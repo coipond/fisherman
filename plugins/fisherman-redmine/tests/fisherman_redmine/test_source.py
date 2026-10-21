@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta, timezone
 
-from fisherman.integrations.redmine.source import RedmineSource, added_lines
+from fisherman_redmine.source import RedmineSource, added_lines
 from tests.support.fakes import FakeRedmine
 
 

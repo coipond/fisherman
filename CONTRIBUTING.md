@@ -16,7 +16,7 @@ Every pull request must pass:
 Run all of it locally with:
 
 ```bash
-pip install -r requirements-lint.txt
+pip install -r requirements-lint.txt -e . -e plugins/fisherman-redmine
 bin/lint
 ```
 
@@ -31,4 +31,4 @@ bin/lint
 
 ## Writing a plug-in
 
-A plug-in is a class built with its configuration section as the only argument; see the interfaces in `fisherman/plugins.py`. Publish it in your own package under the `fisherman.sources`, `fisherman.records` or `fisherman.alerts` entry point group, or refer to it as `package.module:Class` in the configuration.
+A plug-in is a class built with its configuration section as the only argument; see the interfaces in `fisherman/plugins.py`. Publish it as its own package (see `plugins/fisherman-redmine` for a complete example) under the `fisherman.sources`, `fisherman.records` or `fisherman.alerts` entry point group, or refer to it as `package.module:Class` in the configuration.

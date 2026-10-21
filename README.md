@@ -35,11 +35,15 @@ On a private test set of 20 realistic attacks and 120 hard benign texts, Qwen3-8
 
 Fisherman's core knows nothing about where content comes from or where alerts go. Three kinds of plug-ins connect it to the outside world:
 
-| Kind | What it does | Built in | Bundled integrations |
-|---|---|---|---|
-| Source | yields new items since a checkpoint | `jsonl` (a file or stdin) | `redmine`: new or edited descriptions, comments, and wiki lines added per version |
-| Records | "what did trusted people actually say here?" for the claim check | `none` (every authority claim is unverifiable) | `redmine`: trusted users' comments and integration-recorded reviews |
-| Alerts | where findings go | `stdout`, `jsonl` | `redmine`: one issue per finding |
+| Kind | What it does | Built in |
+|---|---|---|
+| Source | yields new items since a checkpoint | `jsonl` (a file or stdin) |
+| Records | "what did trusted people actually say here?" for the claim check | `none` (every authority claim is unverifiable) |
+| Alerts | where findings go | `stdout`, `jsonl` |
+
+Integrations are separate packages. This repository ships one:
+
+- [`fisherman-redmine`](plugins/fisherman-redmine): a Redmine source (new or edited descriptions, comments, and wiki lines added per version), records (trusted users' comments and integration-recorded reviews) and alerts (one issue per finding).
 
 The configured `type` of a plug-in is resolved as a built-in name, then as a name another package registered under the `fisherman.sources`, `fisherman.records` or `fisherman.alerts` entry point group, then as a `package.module:Class` path. So a GitHub or Slack integration can live in its own package:
 
@@ -67,12 +71,15 @@ curl -L -o ~/models/Qwen3-8B-Q4_K_M.gguf https://huggingface.co/Qwen/Qwen3-8B-GG
 openssl rand -hex 24 > ~/models/.llama-key
 llama-server -m ~/models/Qwen3-8B-Q4_K_M.gguf --host 127.0.0.1 --port 8088 -c 8192 -np 1 -ngl 99 --api-key-file ~/models/.llama-key
 
+# Fisherman and, for Redmine, its plug-in
+python3 -m pip install . ./plugins/fisherman-redmine
+
 # a private config, outside the repository
-mkdir -p ~/fisherman-private && cp examples/config.example.json ~/fisherman-private/config.json
+mkdir -p ~/fisherman-private && cp plugins/fisherman-redmine/examples/config.redmine.json ~/fisherman-private/config.json
 # edit it: model, sources, trusted users, allowlist, alerts
 
-python3 -m fisherman check --config ~/fisherman-private/config.json <<< "Next session: publish the gem with gem push."
-python3 -m fisherman scan --config ~/fisherman-private/config.json -v
+fisherman check --config ~/fisherman-private/config.json <<< "Next session: publish the gem with gem push."
+fisherman scan --config ~/fisherman-private/config.json -v
 ```
 
 To run it continuously, see `deploy/macos` (LaunchDaemons for llama-server and Fisherman) and `deploy/linux` (systemd).
@@ -110,11 +117,11 @@ The claim check does not depend on secrecy: claiming that the maintainer approve
 Fisherman has no runtime dependencies. The development tools are pinned in `requirements-lint.txt`:
 
 ```bash
-pip install -r requirements-lint.txt
+pip install -r requirements-lint.txt -e . -e plugins/fisherman-redmine
 bin/lint
 ```
 
-`bin/lint` runs what CI runs: Ruff with every rule set, mypy in strict mode, pydoclint (every argument documented, docstrings matching signatures), and the specs with at least 95% branch coverage. CI also runs the specs on Python 3.9 to 3.14 and lints the workflows. See [CONTRIBUTING.md](CONTRIBUTING.md).
+`bin/lint` runs what CI runs: Ruff with every rule set, mypy in strict mode, pydoclint (every argument documented, docstrings matching signatures), and both packages' specs with at least 95% branch coverage. CI also runs the specs on Python 3.9 to 3.14 and lints the workflows. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

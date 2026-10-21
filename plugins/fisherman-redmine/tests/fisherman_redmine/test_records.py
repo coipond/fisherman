@@ -1,7 +1,7 @@
 import unittest
 
-from fisherman.integrations.redmine.records import RedmineRecords
 from fisherman.item import Item
+from fisherman_redmine.records import RedmineRecords
 from tests.support.fakes import FakeRedmine
 
 ROUTES = {

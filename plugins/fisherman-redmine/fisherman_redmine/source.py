@@ -20,8 +20,8 @@ from fisherman.contracts import (
     is_number_between,
     is_string,
 )
-from fisherman.integrations.redmine.client import Client
 from fisherman.item import Item
+from fisherman_redmine.client import Client
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fisherman import config
 from fisherman.errors import InvalidConfigurationError
+from tests.support.plugins import registered
 
 
 class ConfigTest(unittest.TestCase):
@@ -15,25 +16,26 @@ class ConfigTest(unittest.TestCase):
         self.assertEqual(cfg["state_file"], config.DEFAULT_STATE_FILE)
 
     def test_shared_integration_settings(self):
-        cfg = config.prepare(
-            {
-                "redmine": {"url": "https://rm", "key_file": "k"},
-                "sources": [{"type": "redmine"}],
-                "records": {"type": "redmine", "trusted_user_ids": [1]},
-                "alerts": {"type": "redmine", "project": "f", "url": "https://other"},
-            }
-        )
+        with registered():
+            cfg = config.prepare(
+                {
+                    "remote": {"url": "https://rm", "key_file": "k"},
+                    "sources": [{"type": "remote"}],
+                    "records": {"type": "remote", "trusted_user_ids": [1]},
+                    "alerts": {"type": "remote", "project": "f", "url": "https://other"},
+                }
+            )
         self.assertEqual(cfg["sources"][0]["url"], "https://rm")
         self.assertEqual(cfg["records"]["key_file"], "k")
         self.assertEqual(cfg["alerts"]["url"], "https://other")
 
     def test_every_problem_is_reported(self):
-        with self.assertRaises(InvalidConfigurationError) as ctx:
+        with registered(), self.assertRaises(InvalidConfigurationError) as ctx:
             config.prepare(
                 {
-                    "sources": [{"type": "redmine"}, {"type": "nope"}],
+                    "sources": [{"type": "remote"}, {"type": "nope"}],
                     "alerts": {"type": "jsonl"},
-                    "records": {"type": "redmine", "url": "https://rm"},
+                    "records": {"type": "remote", "url": "https://rm"},
                 }
             )
         message = str(ctx.exception)
@@ -55,8 +57,8 @@ class ConfigTest(unittest.TestCase):
         self.assertIn("sources:", str(ctx.exception))
 
     def test_root_and_plugin_problems_together(self):
-        with self.assertRaises(InvalidConfigurationError) as ctx:
-            config.prepare({"pipeline": {"threshold": 3}, "sources": [{"type": "redmine"}, "x"]})
+        with registered(), self.assertRaises(InvalidConfigurationError) as ctx:
+            config.prepare({"pipeline": {"threshold": 3}, "sources": [{"type": "remote"}, "x"]})
         message = str(ctx.exception)
         self.assertIn("pipeline.threshold", message)
         self.assertIn("sources[0].url: is missing", message)
@@ -64,6 +66,10 @@ class ConfigTest(unittest.TestCase):
     def test_not_an_object(self):
         with self.assertRaises(InvalidConfigurationError):
             config.prepare([])
+
+    def test_plugins_without_a_contract(self):
+        with registered():
+            config.prepare({"alerts": {"type": "unchecked"}})
 
     def test_load(self):
         with tempfile.TemporaryDirectory() as d:
