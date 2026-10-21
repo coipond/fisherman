@@ -84,6 +84,16 @@ fisherman scan --config ~/fisherman-private/config.json -v
 
 To run it continuously, see `deploy/macos` (LaunchDaemons for llama-server and Fisherman) and `deploy/linux` (systemd).
 
+### Docker
+
+The image contains Fisherman and the Redmine plug-in, runs as a non-root user and works with a read-only filesystem. The model server is not in it: run llama-server natively, because on a Mac a container cannot use the GPU and the model would run several times slower.
+
+```bash
+docker compose -f deploy/docker/compose.yml up -d --build
+```
+
+The Compose file mounts `~/fisherman-private` read-only at `/config` and keeps the state in a named volume at `/state`. Use container paths in the configuration: `"model": {"url": "http://host.docker.internal:8088", "key_file": "/config/llama.key"}`, `"prompts_dir": "/config/prompts"`, `"state_file": "/state/state.json"`. Docker Desktop and OrbStack forward `host.docker.internal` to services the host binds to 127.0.0.1; with colima, bind llama-server to an address the VM can reach.
+
 ## Commands
 
 | Command | Does |
