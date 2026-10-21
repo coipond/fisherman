@@ -1,6 +1,7 @@
 """Wires the configured plug-ins together and runs scans and evaluations."""
 from __future__ import annotations
 
+import copy
 import logging
 import time
 from collections import defaultdict
@@ -62,12 +63,18 @@ def scan(cfg: Dict[str, Any]) -> int:
     for scfg in cfg["sources"]:
         source = sources_mod.build(scfg)
         sstate = state.source(source.name)
-        handled = 0
+        before = copy.deepcopy(sstate)
+        handled = failed = 0
         for item in source.items(sstate):
             for part in chunks(item, max_chars):
                 if state.seen(part.uid):
                     continue
-                verdict = pipeline.run(part)
+                try:
+                    verdict = pipeline.run(part)
+                except Exception:
+                    log.exception("%s: check failed, will retry next scan", part.uid)
+                    failed += 1
+                    continue
                 log.info("%s quick=%s alert=%s", part.uid, verdict.scores.get("quick"), verdict.alert)
                 if verdict.alert:
                     alerts.send(part, verdict)
@@ -75,7 +82,11 @@ def scan(cfg: Dict[str, Any]) -> int:
                 state.mark(part.uid)
                 handled += 1
                 state.save()
-        source.commit(sstate)
+        if failed:
+            log.warning("source %s: %d items failed; checkpoint kept so they are read again", source.name, failed)
+            state.data["sources"][source.name] = before
+        else:
+            source.commit(sstate)
         state.save()
         log.info("source %s: %d items checked", source.name, handled)
     if hasattr(pipeline.records, "cache"):
@@ -100,7 +111,11 @@ def evaluate(cfg: Dict[str, Any], items: List[Item], stages: Optional[List[str]]
     groups: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
     results = []
     for n, item in enumerate(items, 1):
-        v: Verdict = pipeline.run(item)
+        try:
+            v: Verdict = pipeline.run(item)
+        except Exception as e:
+            log.exception("%s: check failed", item.uid)
+            v = Verdict(False, [f"error: {e}"], {"error": True})
         g = groups[item.group or ("attack" if item.label else "benign")]
         g[0] += v.alert
         g[1] += 1

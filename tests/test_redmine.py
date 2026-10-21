@@ -119,5 +119,26 @@ class StateAndConfigTest(unittest.TestCase):
             self.assertIn("Alice", p.get("quick"))
 
 
+
+class KeyFallbackTest(unittest.TestCase):
+    def test_second_key_is_tried_on_403_and_none_when_all_fail(self):
+        import urllib.error
+        from fisherman.redmine import Redmine
+
+        calls = []
+
+        def fake_send(key, method, path, params, body):
+            calls.append(key)
+            if key == "a" or path == "/hidden.json":
+                raise urllib.error.HTTPError(path, 403, "Forbidden", {}, None)
+            return {"ok": key}
+
+        rm = Redmine("https://rm", ["a", "b"])
+        rm._send = fake_send
+        self.assertEqual(rm.get("/x.json"), {"ok": "b"})
+        self.assertIsNone(rm.get("/hidden.json"))
+        self.assertEqual(calls, ["a", "b", "a", "b"])
+
+
 if __name__ == "__main__":
     unittest.main()

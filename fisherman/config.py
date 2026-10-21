@@ -1,6 +1,6 @@
 """Configuration: one JSON file. See examples/config.example.json for every option.
 
-Plug-in sections may leave out url/key_file; they then reuse the "redmine" section's values.
+Plug-in sections may leave out url/key_file/key_files; they then reuse the "redmine" section's values.
 """
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ def load(path: str) -> Dict[str, Any]:
     shared = cfg.get("redmine", {})
     for section in [*cfg.get("sources", []), cfg.get("records") or {}, cfg.get("alerts") or {}]:
         if section.get("type") == "redmine":
-            for k in ("url", "key", "key_file", "timeout"):
+            for k in ("url", "key", "key_file", "key_files", "timeout"):
                 if k in shared and k not in section:
                     section[k] = shared[k]
     cfg.setdefault("model", {})
