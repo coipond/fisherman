@@ -1,0 +1,43 @@
+# Fisherman as a Portainer stack, built from this repository on the Docker host. No registry.
+#
+# Portainer: Stacks > Add stack > Repository
+#   Repository URL:  https://github.com/coipond/fisherman
+#   Reference:       refs/heads/master (or a release tag)
+#   Compose path:    deploy/portainer/stack.yml
+#
+# Before deploying, on the Docker host:
+#   /opt/fisherman/private/config.json   the configuration (container paths, see below)
+#   /opt/fisherman/private/prompts/      the tuned prompts
+#   /opt/fisherman/private/*.key         the model and Redmine keys
+#   sudo chown -R 10001:10001 /opt/fisherman/private && sudo chmod -R go-rwx /opt/fisherman/private
+#
+# Configuration paths inside the container:
+#   "model": {"url": "https://llm.example.com", "key_file": "/config/llama.key"},
+#   "prompts_dir": "/config/prompts",
+#   "redmine": {"url": "https://redmine.example.com", "key_file": "/config/redmine.key"},
+#   "state_file": "/state/state.json"
+services:
+  fisherman:
+    build:
+      context: ../..
+    image: fisherman:local
+    command: ["run", "--config", "/config/config.json", "--interval", "600"]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+    pids_limit: 64
+    tmpfs:
+      - /tmp
+    volumes:
+      - /opt/fisherman/private:/config:ro
+      - state:/state
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+volumes:
+  state:

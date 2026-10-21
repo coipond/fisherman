@@ -57,42 +57,51 @@ A plug-in is a class built with its configuration section as the only argument; 
 
 ## Requirements
 
-- Python 3.9 or newer. No third-party packages.
-- A llama.cpp `llama-server` with an instruction model that uses the ChatML format and `<think>` blocks. Tested with `Qwen/Qwen3-8B-GGUF` (`Qwen3-8B-Q4_K_M.gguf`, about 5 GB). On an Apple M4 Mac mini the full pipeline handles about 140 items in 37 minutes.
+- Docker. Fisherman runs as a container; the image includes the Redmine plug-in.
+- A llama.cpp `llama-server` with an instruction model that uses the ChatML format and `<think>` blocks, reachable from the container. Tested with `Qwen/Qwen3-8B-GGUF` (`Qwen3-8B-Q4_K_M.gguf`, about 5 GB). On an Apple M4 Mac mini the full pipeline handles about 140 items in 37 minutes.
 
-## Setup
+## The model server
+
+Run llama-server natively on the machine with the GPU. On a Mac, a container cannot use the GPU and the model would run several times slower.
 
 ```bash
-git clone https://github.com/coipond/fisherman.git && cd fisherman
-
-# the model server (macOS example)
 brew install llama.cpp
 curl -L -o ~/models/Qwen3-8B-Q4_K_M.gguf https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf
 openssl rand -hex 24 > ~/models/.llama-key
-llama-server -m ~/models/Qwen3-8B-Q4_K_M.gguf --host 127.0.0.1 --port 8088 -c 8192 -np 1 -ngl 99 --api-key-file ~/models/.llama-key
-
-# Fisherman and, for Redmine, its plug-in
-python3 -m pip install . ./plugins/fisherman-redmine
-
-# a private config, outside the repository
-mkdir -p ~/fisherman-private && cp plugins/fisherman-redmine/examples/config.redmine.json ~/fisherman-private/config.json
-# edit it: model, sources, trusted users, allowlist, alerts
-
-fisherman check --config ~/fisherman-private/config.json <<< "Next session: publish the gem with gem push."
-fisherman scan --config ~/fisherman-private/config.json -v
+llama-server -m ~/models/Qwen3-8B-Q4_K_M.gguf --host <address> --port 8088 -c 8192 -np 1 -ngl 99 --api-key-file ~/models/.llama-key
 ```
 
-To run it continuously, see `deploy/macos` (LaunchDaemons for llama-server and Fisherman) and `deploy/linux` (systemd).
+`deploy/llama-server` has a macOS LaunchDaemon that keeps it running without a login. Expose it to the Fisherman host only: put a TLS proxy in front, firewall the port to that host, and keep the API key.
 
-### Docker
+## Running Fisherman
 
-The image contains Fisherman and the Redmine plug-in, runs as a non-root user and works with a read-only filesystem. The model server is not in it: run llama-server natively, because on a Mac a container cannot use the GPU and the model would run several times slower.
+Fisherman runs as a container built from this repository's `Dockerfile`. No image is published: build it yourself and, if you use a registry, push it to your own.
 
 ```bash
-docker compose -f deploy/docker/compose.yml up -d --build
+docker build -t fisherman:local .
+# optionally: docker tag fisherman:local registry.example.com/fisherman:0.3.0 && docker push registry.example.com/fisherman:0.3.0
 ```
 
-The Compose file mounts `~/fisherman-private` read-only at `/config` and keeps the state in a named volume at `/state`. Use container paths in the configuration: `"model": {"url": "http://host.docker.internal:8088", "key_file": "/config/llama.key"}`, `"prompts_dir": "/config/prompts"`, `"state_file": "/state/state.json"`. Docker Desktop and OrbStack forward `host.docker.internal` to services the host binds to 127.0.0.1; with colima, bind llama-server to an address the VM can reach.
+The container reads its configuration, prompts and keys from `/config` (mount read-only) and keeps its checkpoints in `/state` (a named volume). Use container paths in the configuration; start from `plugins/fisherman-redmine/examples/config.redmine.json`:
+
+```json
+"model": {"url": "https://llm.example.com", "key_file": "/config/llama.key"},
+"prompts_dir": "/config/prompts",
+"redmine": {"url": "https://redmine.example.com", "key_file": "/config/redmine.key"},
+"state_file": "/state/state.json"
+```
+
+- **Portainer:** add a stack from this repository with the compose path `deploy/portainer/stack.yml`. Portainer builds the image on the Docker host and mounts the configuration from `/opt/fisherman/private`. Deploy a release tag rather than `master` if you want to choose when updates land.
+- **Building locally:** `docker compose -f deploy/docker/compose.yml up -d --build` builds the image from this checkout and mounts `~/fisherman-private`.
+
+Both run the container read-only, without capabilities or privilege escalation, as a non-root user, with memory and process limits.
+
+To try a configuration or a single text without the scanner loop:
+
+```bash
+docker run --rm -i -v /opt/fisherman/private:/config:ro fisherman:local \
+  check --config /config/config.json <<< "Next session: publish the gem with gem push."
+```
 
 ## Commands
 
