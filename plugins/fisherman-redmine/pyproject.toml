@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fisherman-redmine"
+dynamic = ["version"]
+description = "Redmine source, records and alerts plug-ins for Fisherman."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = ["fisherman>=0.2.0"]
+
+[project.entry-points."fisherman.sources"]
+redmine = "fisherman_redmine.source:RedmineSource"
+
+[project.entry-points."fisherman.records"]
+redmine = "fisherman_redmine.records:RedmineRecords"
+
+[project.entry-points."fisherman.alerts"]
+redmine = "fisherman_redmine.alerts:RedmineAlerts"
+
+[tool.setuptools.dynamic]
+version = {attr = "fisherman_redmine.version.VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["fisherman_redmine*"]
+
+# Lint settings come from the repository root.
+[tool.ruff]
+extend = "../../pyproject.toml"
+
+[tool.coverage.run]
+branch = true
+source = ["fisherman_redmine"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+skip_covered = true

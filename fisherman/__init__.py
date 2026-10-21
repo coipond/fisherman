@@ -1,3 +1,6 @@
 """Fisherman: catches prompt injection and authority spoofing in what AI agents read and write."""
 
-__version__ = "0.1.0"
+from fisherman.version import VERSION
+
+__version__ = VERSION
+__all__ = ["VERSION", "__version__"]
