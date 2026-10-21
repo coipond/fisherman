@@ -1,0 +1,59 @@
+{
+  "model": {
+    "url": "http://127.0.0.1:8088",
+    "key_file": "~/models/.llama-key",
+    "timeout": 900
+  },
+  "prompts_dir": "~/fisherman-private/prompts",
+  "prompt_vars": {"principal": "Alice"},
+
+  "pipeline": {
+    "stages": ["quick", "reason", "claims"],
+    "threshold": 0.5,
+    "quick_examples": true,
+    "window_tokens": 250,
+    "stride_tokens": 200,
+    "max_quick_tokens": 800,
+    "max_reason_tokens": 1200,
+    "reason_budget": 1400,
+    "max_item_chars": 4000,
+    "principal_aliases": ["Ali"],
+    "rule_page_pattern": "\\b(rules|policies):\\w",
+    "context_ref_pattern": "#(\\d{3,6})\\b"
+  },
+
+  "destinations": {
+    "github_owners": ["my-org", "my-user"],
+    "hosts": ["redmine.example.com"]
+  },
+
+  "redmine": {
+    "url": "https://redmine.example.com",
+    "key_file": "~/fisherman-private/redmine.key"
+  },
+
+  "sources": [
+    {
+      "type": "redmine",
+      "name": "redmine",
+      "projects": "all",
+      "exclude_projects": ["fisherman"],
+      "skip_author_ids": [1],
+      "lookback_hours": 24
+    }
+  ],
+
+  "records": {
+    "type": "redmine",
+    "trusted_user_ids": [1],
+    "review_note_pattern": "^\\[github:[^\\]]*\\].*\\bAlice\\b"
+  },
+
+  "alerts": {
+    "type": "redmine",
+    "project": "fisherman",
+    "assigned_to_id": 1
+  },
+
+  "state_file": "~/.local/state/fisherman/state.json"
+}
