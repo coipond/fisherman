@@ -4,9 +4,10 @@ Redmine plug-ins for [Fisherman](../../README.md): a source, a records plug-in a
 
 ## Install
 
+The Fisherman image includes this plug-in. To install it elsewhere, from the repository root:
+
 ```bash
-python3 -m pip install ./            # Fisherman core, from the repository root
-python3 -m pip install ./plugins/fisherman-redmine
+pip install . ./plugins/fisherman-redmine
 ```
 
 Installing registers the `redmine` type for sources, records and alerts.

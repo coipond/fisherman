@@ -1,4 +1,9 @@
-# Fisherman as a Portainer stack (Stacks > Add stack > Web editor, or from this repository).
+# Fisherman as a Portainer stack, built from this repository on the Docker host. No registry.
+#
+# Portainer: Stacks > Add stack > Repository
+#   Repository URL:  https://github.com/coipond/fisherman
+#   Reference:       refs/heads/master (or a release tag)
+#   Compose path:    deploy/portainer/stack.yml
 #
 # Before deploying, on the Docker host:
 #   /opt/fisherman/private/config.json   the configuration (container paths, see below)
@@ -11,12 +16,11 @@
 #   "prompts_dir": "/config/prompts",
 #   "redmine": {"url": "https://redmine.example.com", "key_file": "/config/redmine.key"},
 #   "state_file": "/state/state.json"
-#
-# Pin the image to a digest from the "Publish Image" workflow summary once it works, so the
-# stack only ever runs a reviewed build: ghcr.io/coipond/fisherman@sha256:...
 services:
   fisherman:
-    image: ghcr.io/coipond/fisherman:master
+    build:
+      context: ../..
+    image: fisherman:local
     command: ["run", "--config", "/config/config.json", "--interval", "600"]
     restart: unless-stopped
     read_only: true

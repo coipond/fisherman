@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  llama-server (Homebrew llama.cpp) as a LaunchDaemon, bound to localhost because Fisherman runs on the same machine.
-  Replace USER, then install like com.example.fisherman.plist.
+  llama-server (Homebrew llama.cpp) as a LaunchDaemon: starts at boot, runs without a login, restarts on failure.
+  Bind it to the address the Fisherman host connects to, and firewall the port to that host.
+  Replace USER and ADDRESS, then:
+    sudo cp com.example.llama-server.plist /Library/LaunchDaemons/
+    sudo chown root:wheel /Library/LaunchDaemons/com.example.llama-server.plist
+    sudo launchctl bootstrap system /Library/LaunchDaemons/com.example.llama-server.plist
 -->
 <plist version="1.0"><dict>
   <key>Label</key><string>com.example.llama-server</string>
@@ -10,7 +14,7 @@
   <key>ProgramArguments</key><array>
     <string>/opt/homebrew/bin/llama-server</string>
     <string>-m</string><string>/Users/USER/models/Qwen3-8B-Q4_K_M.gguf</string>
-    <string>--host</string><string>127.0.0.1</string>
+    <string>--host</string><string>ADDRESS</string>
     <string>--port</string><string>8088</string>
     <string>-c</string><string>8192</string>
     <string>-np</string><string>1</string>
