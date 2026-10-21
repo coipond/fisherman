@@ -7,12 +7,14 @@
 - [Enhancement] Let plug-ins of one type share connection settings through a top-level section named after the type (for example `"redmine": {"url": ..., "key_file": ...}`).
 - [Enhancement] Exit with code 2 and a one-line error on configuration, model or Redmine failures instead of a traceback.
 - [Enhancement] Raise `ModelUnavailableError` before reading any source when the model server is down, so no item is skipped.
+- **[Feature]** Add a Docker image (Fisherman and the Redmine plug-in, non-root, works read-only, about 47 MB) and a Compose file for running it next to a native llama-server.
 - [Maintenance] Rename the `pipeline.stages` setting to `pipeline.steps` and the `eval --stages` option to `--steps`.
 - [Maintenance] Split the pipeline into one class per step (`QuickCheck`, `ReasonCheck`, `ClaimCheck`) and the runner into `Scanner`, `Evaluator`, `State` and `chunks`.
 - [Maintenance] Add `fisherman.errors` with one documented error class per failure, all under `BaseError`.
 - [Maintenance] Lint with Ruff (all rules), mypy (strict) and pydoclint (docstrings must match signatures); pin the tools in `requirements-lint.txt`; add `bin/lint`.
 - [Maintenance] Mirror the package layout in `tests/` and require 95% branch coverage (currently 99%).
-- [Maintenance] Pin GitHub Actions by commit SHA, verify the pins and run actionlint on workflow changes; run CI nightly and on Python 3.9 to 3.14; add Renovate with a 7-day release age.
+- [Maintenance] Lint the Dockerfile with hadolint, build and smoke-test the image in CI, and pin base images by digest.
+- [Maintenance] Pin GitHub Actions by commit SHA, verify the pins and run actionlint; run CI nightly and on Python 3.9 to 3.14; gate everything behind one `CI Success` job to require in branch protection; add Renovate with a 7-day release age.
 
 ## 0.1.0 (2026-10-21)
 - **[Feature]** Three-step detection pipeline on one local llama.cpp server: windowed quick check, reasoning check, and claim check (authority claims verified against the trusted users' own record, sends checked against an allowlist).

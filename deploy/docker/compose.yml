@@ -1,0 +1,33 @@
+# Fisherman in a container, with llama-server running natively on the host (on a Mac, so it can
+# use the GPU). From the repository root:
+#   docker compose -f deploy/docker/compose.yml up -d --build
+#
+# The configuration must use the container's paths:
+#   "model": {"url": "http://host.docker.internal:8088", "key_file": "/config/llama.key"},
+#   "prompts_dir": "/config/prompts",
+#   "redmine": {"url": "...", "key_file": "/config/redmine.key"},
+#   "state_file": "/state/state.json"
+name: fisherman
+
+services:
+  fisherman:
+    build:
+      context: ../..
+    image: fisherman:local
+    command: ["run", "--config", "/config/config.json", "--interval", "600"]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+    pids_limit: 64
+    tmpfs:
+      - /tmp
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${FISHERMAN_PRIVATE:-~/fisherman-private}:/config:ro
+      - state:/state
+
+volumes:
+  state:

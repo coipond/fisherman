@@ -1,0 +1,11 @@
+.git
+.github
+**/.coverage
+**/*.egg-info
+**/__pycache__
+**/tests
+build
+dist
+deploy
+examples
+bin
