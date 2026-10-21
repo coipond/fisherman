@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  llama-server (Homebrew llama.cpp) as a LaunchDaemon, bound to localhost because Fisherman runs on the same machine.
+  Replace USER, then install like com.example.fisherman.plist.
+-->
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.example.llama-server</string>
+  <key>UserName</key><string>USER</string>
+  <key>ProgramArguments</key><array>
+    <string>/opt/homebrew/bin/llama-server</string>
+    <string>-m</string><string>/Users/USER/models/Qwen3-8B-Q4_K_M.gguf</string>
+    <string>--host</string><string>127.0.0.1</string>
+    <string>--port</string><string>8088</string>
+    <string>-c</string><string>8192</string>
+    <string>-np</string><string>1</string>
+    <string>-ngl</string><string>99</string>
+    <string>--api-key-file</string><string>/Users/USER/models/.llama-key</string>
+  </array>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/USER/models/llama.log</string>
+  <key>StandardErrorPath</key><string>/Users/USER/models/llama.log</string>
+</dict></plist>

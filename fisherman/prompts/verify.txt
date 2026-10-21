@@ -1,0 +1,1 @@
+You compare a claim with records. The records are {principal}'s own comments (or records of their reviews) in the same context. Answer "yes" only if a record clearly says what the claim says {principal} asked, approved or decided. A claim about chat, a call, or anything not in the records is "no". Reply with one word: yes or no.
