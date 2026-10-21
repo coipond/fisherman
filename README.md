@@ -92,6 +92,8 @@ The image contains Fisherman and the Redmine plug-in, runs as a non-root user an
 docker compose -f deploy/docker/compose.yml up -d --build
 ```
 
+Every merge to `master` publishes a multi-arch image (amd64, arm64) to `ghcr.io/coipond/fisherman`, tagged `master` and with the commit SHA, with an SBOM and signed build provenance (`gh attestation verify oci://ghcr.io/coipond/fisherman:master --owner coipond`). For a server managed by Portainer, use `deploy/portainer/stack.yml` and pin the image to a digest.
+
 The Compose file mounts `~/fisherman-private` read-only at `/config` and keeps the state in a named volume at `/state`. Use container paths in the configuration: `"model": {"url": "http://host.docker.internal:8088", "key_file": "/config/llama.key"}`, `"prompts_dir": "/config/prompts"`, `"state_file": "/state/state.json"`. Docker Desktop and OrbStack forward `host.docker.internal` to services the host binds to 127.0.0.1; with colima, bind llama-server to an address the VM can reach.
 
 ## Commands
