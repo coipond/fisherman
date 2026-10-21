@@ -5,7 +5,9 @@
   ],
   "minimumReleaseAge": "7 days",
   "pip_requirements": {
-    "managerFilePatterns": ["/(^|/)requirements-lint\\.txt$/"]
+    "managerFilePatterns": [
+      "/(^|/)requirements-lint\\.txt$/"
+    ]
   },
   "github-actions": {
     "enabled": true,
@@ -13,5 +15,14 @@
   },
   "labels": [
     "dependencies"
+  ],
+  "packageRules": [
+    {
+      "description": "setuptools 83+ requires Python 3.10; hold the build backend while Python 3.9 (the macOS system Python) is supported",
+      "matchPackageNames": [
+        "setuptools"
+      ],
+      "allowedVersions": "<83"
+    }
   ]
 }
