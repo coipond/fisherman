@@ -1,5 +1,7 @@
+"""Allows running Fisherman with `python -m fisherman`."""
+
 import sys
 
-from .cli import main
+from fisherman.cli import main
 
 sys.exit(main())

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fisherman"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Catches prompt injection and authority spoofing in what AI agents read and write. Runs local LLMs only and checks claims against the record."
 readme = "README.md"
 license = {text = "MIT"}
@@ -14,8 +14,95 @@ dependencies = []
 [project.scripts]
 fisherman = "fisherman.cli:main"
 
+[tool.setuptools.dynamic]
+version = {attr = "fisherman.version.VERSION"}
+
 [tool.setuptools.packages.find]
 include = ["fisherman*"]
 
 [tool.setuptools.package-data]
-fisherman = ["prompts/*.txt"]
+fisherman = ["pipeline/templates/*.txt"]
+
+# Linters and tools are pinned in requirements-lint.txt and never become runtime dependencies.
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  # Conflicts between rules: keep one blank line style and summary on the first line
+  "D203",
+  "D213",
+  # The formatter owns these
+  "COM812",
+  "ISC001",
+  # Plug-in configuration sections are free-form JSON objects
+  "ANN401",
+  # Size and complexity limits are off, as in RuboCop Metrics
+  "C901",
+  "PLR0911",
+  "PLR0912",
+  "PLR0913",
+  "PLR0915",
+  # Error messages are built inline next to the raise, which reads better here
+  "TRY003",
+  # No per-file license headers; LICENSE covers the repository
+  "CPY",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+  "D",       # test names describe the behaviour
+  "ANN",     # fakes and fixtures stay light
+  "INP001",  # unittest discovery uses the tests package
+  "PLR2004", # literal expectations are the point of a test
+  "PT",      # unittest, not pytest
+  "S101",
+  "SLF001",  # tests may reach into internals
+  "ARG",     # fakes implement interfaces they partly ignore
+  "S105",
+  "S106",
+  "EM",      # inline exception messages in fakes
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+known-first-party = ["fisherman"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+# mypy needs 3.10+; the 3.9 runtime is covered by the test matrix
+python_version = "3.10"
+strict = true
+warn_unreachable = true
+files = ["fisherman"]
+
+[tool.pydoclint]
+style = "google"
+arg-type-hints-in-docstring = false
+check-return-types = false
+check-yield-types = false
+skip-checking-short-docstrings = false
+allow-init-docstring = true
+check-class-attributes = false
+exclude = "tests"
+
+[tool.coverage.run]
+branch = true
+source = ["fisherman"]
+omit = ["fisherman/__main__.py"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+skip_covered = true
+exclude_also = [
+  "if TYPE_CHECKING:",
+  "\\.\\.\\.$",
+]

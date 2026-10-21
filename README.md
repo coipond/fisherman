@@ -1,5 +1,8 @@
 # Fisherman
 
+[![CI](https://github.com/coipond/fisherman/actions/workflows/ci.yml/badge.svg)](https://github.com/coipond/fisherman/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Catches prompt injection and authority spoofing in what AI agents read and write. Runs local LLMs only and checks claims against the record.
 
 ## Why
@@ -30,13 +33,23 @@ On a private test set of 20 realistic attacks and 120 hard benign texts, Qwen3-8
 
 ## Plug-ins
 
-| Kind | What it does | Included |
-|---|---|---|
-| Source | yields new items since a checkpoint | `redmine` (new or edited descriptions, comments, wiki lines added per version), `jsonl` (a file or stdin) |
-| Records | "what did trusted people actually say here?" for the claim check | `redmine` (trusted users' comments, review notes), `none` (every authority claim is unverifiable) |
-| Alerts | where findings go | `redmine` (one issue per finding), `jsonl`, `stdout` |
+Fisherman's core knows nothing about where content comes from or where alerts go. Three kinds of plug-ins connect it to the outside world:
 
-Each kind is a small class; see the docstrings in `fisherman/sources`, `fisherman/records` and `fisherman/alerts`.
+| Kind | What it does | Built in | Bundled integrations |
+|---|---|---|---|
+| Source | yields new items since a checkpoint | `jsonl` (a file or stdin) | `redmine`: new or edited descriptions, comments, and wiki lines added per version |
+| Records | "what did trusted people actually say here?" for the claim check | `none` (every authority claim is unverifiable) | `redmine`: trusted users' comments and integration-recorded reviews |
+| Alerts | where findings go | `stdout`, `jsonl` | `redmine`: one issue per finding |
+
+The configured `type` of a plug-in is resolved as a built-in name, then as a name another package registered under the `fisherman.sources`, `fisherman.records` or `fisherman.alerts` entry point group, then as a `package.module:Class` path. So a GitHub or Slack integration can live in its own package:
+
+```toml
+# pyproject.toml of your package
+[project.entry-points."fisherman.sources"]
+github = "fisherman_github.source:GitHubSource"
+```
+
+A plug-in is a class built with its configuration section as the only argument; it may declare a `CONTRACT` so its settings are validated with the rest of the configuration. The interfaces are in `fisherman/plugins.py`.
 
 ## Requirements
 
@@ -70,8 +83,10 @@ To run it continuously, see `deploy/macos` (LaunchDaemons for llama-server and F
 |---|---|
 | `fisherman scan --config FILE` | one pass over every source, sends alerts |
 | `fisherman run --config FILE [--interval 600]` | scans forever |
-| `fisherman eval --config FILE SET.jsonl [--stages quick,reason] [--out results.json]` | scores a labelled set: caught attacks and false alarms per group |
+| `fisherman eval --config FILE SET.jsonl [--steps quick,reason] [--out results.json]` | scores a labelled set: caught attacks and false alarms per group |
 | `fisherman check --config FILE` | checks text from stdin, prints the verdict, exits 1 on an alert |
+
+Every command validates the configuration first and lists every problem with its key path. On a configuration, model or Redmine failure the exit code is 2.
 
 Evaluation sets are JSON Lines with `text`, `label` (true for an attack), `group`, and optionally `author`, `source` and `context` (for example `{"type": "issue", "id": 123}` so the claim check can read the record). See `examples/eval-sample.jsonl`.
 
@@ -92,9 +107,14 @@ The claim check does not depend on secrecy: claiming that the maintainer approve
 
 ## Development
 
+Fisherman has no runtime dependencies. The development tools are pinned in `requirements-lint.txt`:
+
 ```bash
-python3 -m unittest discover -s tests -t . -v
+pip install -r requirements-lint.txt
+bin/lint
 ```
+
+`bin/lint` runs what CI runs: Ruff with every rule set, mypy in strict mode, pydoclint (every argument documented, docstrings matching signatures), and the specs with at least 95% branch coverage. CI also runs the specs on Python 3.9 to 3.14 and lints the workflows. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

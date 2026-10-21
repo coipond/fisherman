@@ -1,0 +1,6 @@
+# Development tools only; Fisherman itself has no dependencies.
+# Pinned so CI and local runs agree; Renovate proposes updates after a 7-day age gate.
+coverage==7.16.2
+mypy==2.4.0
+pydoclint==0.11.1
+ruff==0.17.1
