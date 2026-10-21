@@ -50,6 +50,8 @@ class Pipeline:
         self.max_quick = int(cfg.get("max_quick_tokens", 800))
         self.max_reason = int(cfg.get("max_reason_tokens", 1200))
         self.reason_budget = int(cfg.get("reason_budget", 1400))
+        self.extract_budget = int(cfg.get("extract_budget", 1000))
+        self.alert_on_extract_error = bool(cfg.get("alert_on_extract_error", False))
         self.examples = bool(cfg.get("quick_examples", True))
         self.stages = cfg.get("stages", ["quick", "reason", "claims"])
         if cfg.get("to_principal_pattern"):
@@ -90,12 +92,14 @@ class Pipeline:
     # Step 3
     def claims(self, item: Item) -> Dict[str, Any]:
         body = self.llm.truncate(item.text, 1500)
-        raw = self.llm.chat(self.prompts.get("extract"), f"{self.header(item)}\n<content>\n{body}\n</content>", 500,
+        raw = self.llm.chat(self.prompts.get("extract"), f"{self.header(item)}\n<content>\n{body}\n</content>", self.extract_budget,
                             json_schema=EXTRACT_SCHEMA)
         try:
             ex = json.loads(raw)
         except ValueError:
-            return {"reasons": ["claim check: unparsable extraction"], "extraction": raw}
+            # A cut-off or malformed extraction is not evidence; the reasoning step still covers the item.
+            reasons = ["claim check: unparsable extraction"] if self.alert_on_extract_error else []
+            return {"reasons": reasons, "risky": [], "extraction": raw, "error": True}
         reasons: List[str] = []
         base: Optional[List[str]] = None
         for c in ex.get("authority_claims", []):

@@ -105,9 +105,10 @@ class ClaimsStepTest(unittest.TestCase):
         llm = FakeLLM(risky=".", answers=self.answers(extraction(sends=[("Pushed to github.com/my-org/x.", "github.com/my-org/x")])))
         self.assertFalse(make(llm, stages=["quick", "claims"]).run(issue("x")).alert)
 
-    def test_unparsable_extraction_alerts(self):
+    def test_unparsable_extraction_is_not_evidence(self):
         llm = FakeLLM(risky=".", answers=self.answers("not json"))
-        self.assertTrue(make(llm, stages=["quick", "claims"]).run(issue("x")).alert)
+        self.assertFalse(make(llm, stages=["quick", "claims"]).run(issue("x")).alert)
+        self.assertTrue(make(llm, stages=["quick", "claims"], alert_on_extract_error=True).run(issue("x")).alert)
 
 
 class DestinationsTest(unittest.TestCase):
