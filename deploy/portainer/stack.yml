@@ -1,4 +1,4 @@
-# Fisherman as a Portainer stack, built from this repository on the Docker host. No registry.
+# Fisherman as a Portainer stack, built from this repository's Dockerfile on the Docker host.
 #
 # Portainer: Stacks > Add stack > Repository
 #   Repository URL:  https://github.com/coipond/fisherman

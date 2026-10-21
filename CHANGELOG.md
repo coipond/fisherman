@@ -2,7 +2,7 @@
 
 ## 0.3.0 (Unreleased)
 - **[Feature]** Add a Portainer stack (`deploy/portainer/stack.yml`) that builds the image from this repository on the Docker host: the locked-down container with the private configuration mounted read-only from `/opt/fisherman/private` and log rotation.
-- [Maintenance] Make Docker the only supported way to run Fisherman: drop the macOS LaunchDaemon and the systemd unit for Fisherman, and keep the llama-server LaunchDaemon under `deploy/llama-server`.
+- [Maintenance] Run Fisherman only as a container built from the `Dockerfile`: drop the macOS LaunchDaemon and the systemd unit for Fisherman, and keep the llama-server LaunchDaemon under `deploy/llama-server`.
 
 ## 0.2.0 (Unreleased)
 - **[Feature]** Resolve plug-ins by built-in name, by `fisherman.sources` / `fisherman.records` / `fisherman.alerts` entry points, or by a `package.module:Class` path, so integrations can live outside this repository.
