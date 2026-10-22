@@ -1,0 +1,38 @@
+{
+  "redmine": {
+    "url": "https://redmine.example.com",
+    "key_file": "~/fisherman-private/redmine.key"
+  },
+  "sources": [
+    {
+      "type": "redmine",
+      "name": "redmine",
+      "projects": "all",
+      "exclude_projects": [
+        "fisherman"
+      ],
+      "skip_author_ids": [
+        1
+      ],
+      "lookback_hours": 24
+    }
+  ],
+  "records": {
+    "type": "redmine",
+    "trusted_user_ids": [
+      1
+    ],
+    "review_note_pattern": "^\\[github:[^\\]]*\\].*\\bAlice\\b",
+    "review_verification": {
+      "trusted_github_ids": [
+        1234567
+      ],
+      "token_file": "~/fisherman-private/github.key"
+    }
+  },
+  "alerts": {
+    "type": "redmine",
+    "project": "fisherman",
+    "assigned_to_id": 1
+  }
+}

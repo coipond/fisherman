@@ -11,6 +11,14 @@ Check = Callable[[Any], bool]
 
 
 @dataclass(frozen=True)
+class _Whole:
+    """A rule on the whole mapping, for constraints between keys."""
+
+    check: Check
+    message: str
+
+
+@dataclass(frozen=True)
 class _Rule:
     """One key's rule: whether it must be present and what its value must satisfy."""
 
@@ -35,6 +43,7 @@ class Contract:
     def __init__(self) -> None:
         """Create an empty contract."""
         self._rules: list[_Rule] = []
+        self._wholes: list[_Whole] = []
 
     def required(self, key: str, check: Check, message: str) -> Contract:
         """Add a key that must be present and pass `check`.
@@ -81,6 +90,20 @@ class Contract:
         self._rules.append(_Rule(key, required=required, check=None, message="", nested=contract))
         return self
 
+    def rule(self, check: Check, message: str) -> Contract:
+        """Add a rule on the whole mapping, for constraints between keys.
+
+        Args:
+            check: Predicate the whole mapping must satisfy.
+            message: What is wrong when the predicate fails; reported at the mapping's scope.
+
+        Returns:
+            The contract, for chaining.
+
+        """
+        self._wholes.append(_Whole(check, message))
+        return self
+
     def extend(self, other: Contract) -> Contract:
         """Combine two contracts.
 
@@ -93,6 +116,7 @@ class Contract:
         """
         combined = Contract()
         combined._rules = [*self._rules, *other._rules]
+        combined._wholes = [*self._wholes, *other._wholes]
         return combined
 
     def errors(self, data: Any, scope: str = "") -> list[str]:
@@ -121,6 +145,7 @@ class Contract:
                 found.extend(rule.nested.errors(value, f"{prefix}{rule.key}"))
             elif rule.check is not None and not rule.check(value):
                 found.append(f"{prefix}{rule.key}: {rule.message}")
+        found.extend(f"{scope or 'config'}: {w.message}" for w in self._wholes if not w.check(data))
         return found
 
     def validate(self, data: Any, scope: str = "") -> None:

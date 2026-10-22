@@ -1,4 +1,6 @@
+import json
 import unittest
+from pathlib import Path
 
 from fisherman import config, plugins
 from fisherman_redmine.alerts import RedmineAlerts
@@ -24,3 +26,9 @@ class RegistrationTest(unittest.TestCase):
             }
         )
         self.assertEqual(cfg["alerts"]["url"], "https://rm")
+
+
+class ExampleConfigTest(unittest.TestCase):
+    def test_example_config_is_valid(self):
+        example = Path(__file__).parents[2] / "examples" / "config.redmine.json"
+        config.prepare(json.loads(example.read_text()))

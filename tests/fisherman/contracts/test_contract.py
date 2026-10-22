@@ -41,3 +41,12 @@ class ContractTest(unittest.TestCase):
     def test_extend(self):
         combined = INNER.extend(Contract().required("key", is_string, "must be a string"))
         self.assertEqual(combined.errors({}), ["url: is missing", "key: is missing"])
+
+
+class WholeRuleTest(unittest.TestCase):
+    def test_rules_between_keys(self):
+        contract = Contract().rule(lambda d: "a" not in d or "b" in d, "a needs b")
+        self.assertEqual(contract.errors({"a": 1}, "section"), ["section: a needs b"])
+        self.assertEqual(contract.errors({"a": 1}), ["config: a needs b"])
+        self.assertEqual(contract.errors({"a": 1, "b": 2}), [])
+        self.assertEqual(INNER.extend(contract).errors({"url": "u", "a": 1}), ["config: a needs b"])

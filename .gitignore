@@ -1,7 +1,7 @@
 # Private setup never belongs in this repository.
 config.json
 config.*.json
-!examples/config.example.json
+!**/examples/*.json
 prompts.local/
 *.key
 .env
