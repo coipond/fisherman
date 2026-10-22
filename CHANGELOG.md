@@ -1,6 +1,7 @@
 # Fisherman Changelog
 
 ## 0.3.0 (Unreleased)
+- [Enhancement] Contracts can check constraints between keys of a section (`Contract.rule`).
 - **[Feature]** Add a Portainer stack (`deploy/portainer/stack.yml`) that builds the image from this repository on the Docker host: the locked-down container with the private configuration mounted read-only from `/opt/fisherman/private` and log rotation.
 - [Maintenance] Run Fisherman only as a container built from the `Dockerfile`: drop the macOS LaunchDaemon and the systemd unit for Fisherman, and keep the llama-server LaunchDaemon under `deploy/llama-server`.
 

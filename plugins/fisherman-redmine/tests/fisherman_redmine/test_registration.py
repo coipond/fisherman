@@ -24,3 +24,12 @@ class RegistrationTest(unittest.TestCase):
             }
         )
         self.assertEqual(cfg["alerts"]["url"], "https://rm")
+
+
+class ExampleConfigTest(unittest.TestCase):
+    def test_example_config_is_valid(self):
+        import json
+        from pathlib import Path
+
+        example = Path(__file__).parents[2] / "examples" / "config.redmine.json"
+        config.prepare(json.loads(example.read_text()))
