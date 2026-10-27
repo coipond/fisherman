@@ -1,6 +1,9 @@
 # Fisherman Changelog
 
 ## 0.3.0 (Unreleased)
+- [Fix] Confirm relayed merges: the Redmine records read who merged a pull request, so a claim that the principal merged it (or "approved and merged" it) is checked against GitHub instead of always ending up unverified.
+- [Enhancement] Confirm a claim about a pull request only when every kind it names (approved, requested changes, merged) is on record for that pull request, not when any review of it is.
+- [Enhancement] Warn when GitHub's rate limit is spent while confirming reviews, and at startup when `review_verification` has no `token_file`: both used to leave review claims unverified without a word.
 - [Enhancement] Contracts can check constraints between keys of a section (`Contract.rule`).
 - **[Feature]** Add a Portainer stack (`deploy/portainer/stack.yml`) that builds the image from this repository on the Docker host: the locked-down container with the private configuration mounted read-only from `/opt/fisherman/private` and log rotation.
 - [Maintenance] Run Fisherman only as a container built from the `Dockerfile`: drop the macOS LaunchDaemon and the systemd unit for Fisherman, and keep the llama-server LaunchDaemon under `deploy/llama-server`.
