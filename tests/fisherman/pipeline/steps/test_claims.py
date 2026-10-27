@@ -64,6 +64,31 @@ class ClaimCheckTest(unittest.TestCase):
             self.assertEqual(step.call(issue()).reasons, [], claim)
             self.assertNotIn("verify", llm.calls)
 
+    def test_merge_claims_match_without_the_model(self):
+        records = [
+            "[review] alice approved https://github.com/my-org/x/pull/7",
+            "[review] alice merged https://github.com/my-org/x/pull/7",
+        ]
+        for claim in (
+            "Alice merged https://github.com/my-org/x/pull/7.",
+            "Alice approved and merged PR #7.",
+            "Alice approved and merged it.",
+        ):
+            step, llm = check(extraction(claims=[claim]), StaticRecords(records))
+            self.assertEqual(step.call(issue()).reasons, [], claim)
+            self.assertNotIn("verify", llm.calls)
+
+    def test_every_kind_a_claim_names_must_be_on_record(self):
+        approved_only = ["[review] alice approved https://github.com/my-org/x/pull/7"]
+        for claim in ("Alice approved and merged PR #7.", "Alice merged it, approved too."):
+            step, _ = check(extraction(claims=[claim]), StaticRecords(approved_only))
+            self.assertEqual(step.call(issue()).reasons, [f"unverified claim: {claim}"], claim)
+
+    def test_a_review_of_another_pull_request_does_not_count(self):
+        records = ["[review] alice approved https://github.com/my-org/x/pull/8"]
+        step, _ = check(extraction(claims=["Alice approved PR #7."]), StaticRecords(records))
+        self.assertEqual(step.call(issue()).reasons, ["unverified claim: Alice approved PR #7."])
+
     def test_status_facts_and_requests_to_the_principal_are_skipped(self):
         claims = [
             "CI is green on PR #4.",

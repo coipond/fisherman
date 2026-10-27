@@ -67,8 +67,16 @@ _REFUSED = re.compile(
     r"\b(refus\w*|rejected|was blocked|is blocked|cannot|could not|not allowed)\b", re.IGNORECASE
 )
 _PR_REF = re.compile(r"(?:PR #|pull/)(\d+)")
-_REVIEW_WORDS = re.compile(r"\b(review|request\w* changes|approv\w*|comment\w*)\b", re.IGNORECASE)
-_REVIEW_KINDS = ("approved", "requested changes")
+_REVIEW_WORDS = re.compile(
+    r"\b(review|request\w* changes|approv\w*|comment\w*|merg\w*)\b", re.IGNORECASE
+)
+# What a claim can say the principal did on a pull request: how a claim phrases it, and the
+# word a "[review]" record uses for it
+_REVIEW_KINDS = {
+    "approved": r"\bapprov\w*",
+    "requested changes": r"\brequest\w*\s+changes",
+    "merged": r"\bmerg\w*",
+}
 # Records beyond this many characters are cut from the start; the newest matter most
 _RECORDS_CHARS = 6000
 # Tokens of each item the extraction reads
@@ -169,9 +177,10 @@ class ClaimCheck:
     def verify(self, claim: str, records: list[str]) -> bool:
         """Check whether the record supports a claim.
 
-        Review claims are matched without the model: a claim that the principal approved or
-        requested changes is supported by a recorded review of that kind (and of that PR, when
-        the claim names one). Anything else is judged by the model against the record.
+        Review claims are matched without the model: a claim that the principal approved,
+        requested changes or merged is supported when every kind it names is on record (for
+        that PR, when the claim names one). Anything else is judged by the model against the
+        record.
 
         Args:
             claim: The claim, as quoted.
@@ -184,18 +193,14 @@ class ClaimCheck:
         if not records:
             return False
         reviews = [r for r in records if r.startswith("[review]")]
-        if not _PR_REF.search(claim):
-            for kind in _REVIEW_KINDS:
-                if re.search(kind.replace(" ", r"\s+"), claim, re.IGNORECASE) and any(
-                    re.search(kind, r, re.IGNORECASE) for r in reviews
-                ):
-                    return True
+        named = [k for k, said in _REVIEW_KINDS.items() if re.search(said, claim, re.IGNORECASE)]
         prs = set(_PR_REF.findall(claim))
-        if (
-            prs
-            and _REVIEW_WORDS.search(claim)
-            and any(prs & set(re.findall(r"pull/(\d+)", r)) for r in reviews)
-        ):
+        if prs and _REVIEW_WORDS.search(claim):
+            # Every kind the claim names must be on record for that pull request
+            of_pr = [r for r in reviews if prs & set(re.findall(r"pull/(\d+)", r))]
+            if of_pr and all(any(kind in r.lower() for r in of_pr) for kind in named):
+                return True
+        elif not prs and named and all(any(kind in r.lower() for r in reviews) for kind in named):
             return True
         text = "\n---\n".join(records)[-_RECORDS_CHARS:]
         question = (
