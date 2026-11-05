@@ -24,5 +24,11 @@
       ],
       "allowedVersions": "<83"
     }
-  ]
+  ],
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": [
+      "security"
+    ]
+  }
 }
