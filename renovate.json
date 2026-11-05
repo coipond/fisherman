@@ -23,6 +23,13 @@
         "setuptools"
       ],
       "allowedVersions": "<83"
+    },
+    {
+      "description": "Major updates stay manual",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false
     }
   ],
   "osvVulnerabilityAlerts": true,
@@ -30,5 +37,7 @@
     "labels": [
       "security"
     ]
-  }
+  },
+  "automerge": true,
+  "platformAutomerge": true
 }
